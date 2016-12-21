@@ -1,37 +1,27 @@
 <html>
 <head>
-	<!--<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.17.0/vis.min.css">-->
 	<link href="/vis-network.min.css">
 </head>
 <body>
 	<div id="network"></div>
-	<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.17.0/vis.min.js"></script>-->
 	<script src="/vis-network.min.js"></script>
 	<script src="manager.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script>
-		var nodeIds, shadowState, nodesArray, nodes, edgesArray, edges, network;
+		let shadowState, nodesArray, nodes, edges, network;
 
 		function startNetwork() {
-			nodeIds = [];
 			shadowState = false;
 
+			nodes = new vis.DataSet([]);
+			edges = new vis.DataSet([]);
 
-			// create an array with nodes
-			nodesArray = [];
-			nodes = new vis.DataSet(nodesArray);
-
-			// create an array with edges
-			edgesArray = [];
-			edges = new vis.DataSet(edgesArray);
-
-			// create a network
-			var container = document.getElementById('network');
-			var data = {
+			let container = document.getElementById('network');
+			let data = {
 				nodes: nodes,
 				edges: edges
 			};
-			var options = {
+			let options = {
 				physics : {
 					solver: 'repulsion',
 					repulsion: {
@@ -43,7 +33,20 @@
 					},
 				}
 			};
+
 			network = new vis.Network(container, data, options);
+
+			network.on('click', function (params) {
+				if (params.nodes.length > 0) {
+					socket.emit('get_container_info', params.nodes[0]);
+				}
+			});
+
+			network.on('doubleClick', function (params) {
+				if (params.nodes.length > 0) {
+					socket.emit('stop_container', params.nodes[0]);
+				}
+			});
 
 			setTimeout(function() {
 				network.clusterOutliers();
@@ -55,89 +58,16 @@
 		let graph = new Graph(nodes, edges);
 
 		let socket = io('http://127.0.0.1:3000');
-		let nodesToCheck = [];
-		let networkColors = {};
 
 		socket.on('update', function (remoteContainers) {
-			console.log('Received update');
-
 			graph.setRemoteContainers(remoteContainers);
 
 			graph.draw();
-			/*
+		});
 
-			let networks = {};
-
-			for (let key in remoteContainers) {
-				graph.initFromRemoteContainers(remoteContainers);
-
-				let remoteContainer = remoteContainers[key];
-
-				let container = new Container(remoteContainer.name, remoteContainer.id, {});
-
-				for (let remoteNetwork of remoteContainer.networks) {
-					let network = new Network(remoteNetwork);
-
-					container.addNetwork(network);
-				}
-
-				console.log(container);
-
-				if (nodeIds.indexOf(container.id) == -1) {
-					nodes.add({id: container.id, label: container.name, shape: 'box'});
-					nodeIds.push(container.id);
-					nodesToCheck.push(container.id);
-				}
-
-				for (let network of container.networks) {
-					if (networks.hasOwnProperty(network)) {
-						networks[network].push(container.id);
-					} else {
-						networks[network] = [];
-						networks[network].push(container.id);
-					}
-				}
-			}
-
-			for (let nodeToCheck of nodesToCheck) {
-				if (typeof containers[nodeToCheck] === 'undefined') {
-					console.log('Container ' + nodeToCheck + ' has been removed');
-
-					nodes.remove({id:nodeToCheck});
-
-					let index = nodeIds.indexOf(nodeToCheck);
-					nodeIds.splice(index, 1);
-
-					index = nodesToCheck.indexOf(nodeToCheck);
-					nodesToCheck.splice(index, 1);
-				}
-			}
-
-			edges.clear();
-
-			for (let networkName in networks) {
-				let links = [];
-
-				if (typeof networkColors[networkName] == 'undefined') {
-					networkColors[networkName] = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
-				}
-
-				let networkColor = networkColors[networkName];
-
-				for (let networkContainer of networks[networkName]) {
-					for (let subNetworkContainer of networks[networkName]) {
-						if (networkContainer != subNetworkContainer) {
-							if (!links.hasOwnProperty(networkContainer + '-' + subNetworkContainer) && !links.hasOwnProperty(subNetworkContainer + '-' + networkContainer)) {
-								edges.add({from: networkContainer, to: subNetworkContainer, color: networkColor, width: 2, label: networkName});
-
-								links[networkContainer + '-' + subNetworkContainer] = true;
-							}
-						}
-					}
-				}
-			}
-		});*/
-			});
+		socket.on('get_container_info', function (data) {
+			console.log(data);
+		});
 	</script>
 </body>
 </html>

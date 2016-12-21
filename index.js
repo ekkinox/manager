@@ -29,8 +29,6 @@ app.get('/vis-network.min.js', function (req, res) {
 });
 
 io.on('connection', function (socket) {
-	console.log('Member connected');
-
 	dockerNetworkAnalyzer.getNetworkingData().then(
 		function (containers) {
 			socket.emit('update', containers);
@@ -39,12 +37,31 @@ io.on('connection', function (socket) {
 			console.log(err);
 		}
 	);
+
+	socket.on('get_container_info', function (containerId) {
+		let container = docker.getContainer(containerId);
+
+		container.inspect(function (err, data) {
+			socket.emit('get_container_info', data);
+		});
+
+		container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
+			stream.pipe(process.stdout);
+		});
+	});
+
+	socket.on('stop_container', function (containerId) {
+		let container = docker.getContainer(containerId);
+
+		container.stop(function (err, data) {
+			console.log(data);
+		});
+	});
 });
 
-setInterval(function() {
+setInterval(function () {
 	dockerNetworkAnalyzer.getNetworkingData().then(
 		function (containers) {
-			console.log('Send update');
 			io.emit('update', containers);
 		},
 		function (err) {
