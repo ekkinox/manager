@@ -16,6 +16,18 @@ app.get('/', function (req, res) {
 	res.sendfile(__dirname + '/index.html');
 });
 
+app.get('/manager.js', function (req, res) {
+	res.sendfile(__dirname + '/dist/manager.js');
+});
+
+app.get('/vis-network.min.css', function (req, res) {
+	res.sendfile(__dirname + '/node_modules/vis/dist/vis-network.min.css');
+});
+
+app.get('/vis-network.min.js', function (req, res) {
+	res.sendfile(__dirname + '/node_modules/vis/dist/vis-network.min.js');
+});
+
 io.on('connection', function (socket) {
 	console.log('Member connected');
 
