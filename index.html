@@ -38,20 +38,16 @@
 						centralGravity: 0.01,
 						springLength: 200,
 						springConstant: 0.05,
-						nodeDistance: 1000,
+						nodeDistance: 500,
 						damping: 0.09
-					},
-					barnesHut: {
-						gravitationalConstant: -10000,
-						centralGravity: 0.3,
-						springLength: 95,
-						springConstant: 0.001,
-						damping: 0.09,
-						avoidOverlap: 0.5
 					},
 				}
 			};
 			network = new vis.Network(container, data, options);
+
+			setTimeout(function() {
+				network.clusterOutliers();
+			}, 5000);
 		}
 
 		startNetwork();

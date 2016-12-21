@@ -149,7 +149,7 @@ class Graph {
 			let container = this.containers[containerId];
 
 			if (!container.isDrawn()) {
-				this.nodes.add({id: container.id, label: container.name, shape: 'box'});
+				this.nodes.add({id: container.id, label: container.name, shape: 'box', color: {border: 'black', background: 'white'}, font: {size: 20}});
 
 				container.setDraw(true);
 			}
