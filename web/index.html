@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Docker network analyser</title>
+		<link href="/vis-network.min.css">
+		<link href="/bootstrap.css" rel="stylesheet">
+	</head>
+	<body style="height:100%">
+		<div class="container-fluid">
+			<nav class="navbar navbar-default">
+				<div class="container-fluid">
+					<div class="navbar-header">
+						<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+							<span class="sr-only">Toggle navigation</span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+							<span class="icon-bar"></span>
+						</button>
+						<a class="navbar-brand" href="#">Docker Network Analyzer</a>
+					</div>
+					<div id="navbar" class="navbar-collapse collapse">
+						<ul class="nav navbar-nav">
+							<li class="active"><a href="#">Network</a></li>
+						</ul>
+					</div>
+				</div>
+			</nav>
+		</div>
+
+		<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="modalTitle">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="modalTitle">Modal title</h4>
+					</div>
+					<div id="modalBody" class="modal-body">
+						<div class="tabbable">
+							<ul class="nav nav-tabs">
+								<li class="active"><a href="#modalTabInfo" data-toggle="tab">Information</a></li>
+								<li><a href="#modalTabLogs" data-toggle="tab">Logs</a></li>
+							</ul>
+							<div class="tab-content">
+								<div class="tab-pane active" id="modalTabInfo"></div>
+								<div class="tab-pane" id="modalTabLogs"></div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="network" style="width: 100%; height: 100%;"></div>
+	</body>
+	<script src="/vis-network.min.js"></script>
+	<script src="/jquery.js"></script>
+	<script src="/bootstrap.js"></script>
+	<script src="/manager.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="/network.js"></script>
+</html>
