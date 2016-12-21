@@ -1,0 +1,15 @@
+{
+  "name": "docker-network-analyzer-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:docker-network-analyzer/api.git",
+  "author": "Michael Garrez <michael.garrez@doclerholding.com>",
+  "license": "MIT",
+  "dependencies": {
+    "dockerode": "^2.3.1",
+    "express": "^4.14.0",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.0",
+    "socket.io": "^1.7.2"
+  }
+}

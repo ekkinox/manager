@@ -1,0 +1,124 @@
+<html>
+<head>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.17.0/vis.min.css">
+</head>
+<body>
+	<div id="network"></div>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.17.0/vis.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script>
+		let socket = io('http://127.0.0.1:3000');
+		let nodesToCheck = [];
+		let networkColors = {};
+
+		socket.on('update', function (containers) {
+			console.log('Received update');
+
+			let networks = {};
+
+			for (let key in containers) {
+				let container = containers[key];
+
+				if (nodeIds.indexOf(container.id) == -1) {
+					nodes.add({id: container.id, label: container.name, shape: 'box'});
+					nodeIds.push(container.id);
+					nodesToCheck.push(container.id);
+				}
+
+				for (let network of container.networks) {
+					if (networks.hasOwnProperty(network)) {
+						networks[network].push(container.id);
+					} else {
+						networks[network] = [];
+						networks[network].push(container.id);
+					}
+				}
+			}
+
+			for (let nodeToCheck of nodesToCheck) {
+				if (typeof containers[nodeToCheck] === 'undefined') {
+					console.log('Container ' + nodeToCheck + ' has been removed');
+
+					nodes.remove({id:nodeToCheck});
+
+					let index = nodeIds.indexOf(nodeToCheck);
+					nodeIds.splice(index, 1);
+
+					index = nodesToCheck.indexOf(nodeToCheck);
+					nodesToCheck.splice(index, 1);
+				}
+			}
+
+			edges.clear();
+
+			for (let networkName in networks) {
+				let links = [];
+
+				if (typeof networkColors[networkName] == 'undefined') {
+					networkColors[networkName] = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+				}
+
+				let networkColor = networkColors[networkName];
+
+				for (let networkContainer of networks[networkName]) {
+					for (let subNetworkContainer of networks[networkName]) {
+						if (networkContainer != subNetworkContainer) {
+							if (!links.hasOwnProperty(networkContainer + '-' + subNetworkContainer) && !links.hasOwnProperty(subNetworkContainer + '-' + networkContainer)) {
+								edges.add({from: networkContainer, to: subNetworkContainer, color: networkColor, width: 2, label: networkName});
+
+								links[networkContainer + '-' + subNetworkContainer] = true;
+							}
+						}
+					}
+				}
+			}
+		});
+
+		var nodeIds, shadowState, nodesArray, nodes, edgesArray, edges, network;
+
+		function startNetwork() {
+			nodeIds = [];
+			shadowState = false;
+
+
+			// create an array with nodes
+			nodesArray = [];
+			nodes = new vis.DataSet(nodesArray);
+
+			// create an array with edges
+			edgesArray = [];
+			edges = new vis.DataSet(edgesArray);
+
+			// create a network
+			var container = document.getElementById('network');
+			var data = {
+				nodes: nodes,
+				edges: edges
+			};
+			var options = {
+				physics : {
+					solver: 'repulsion',
+					repulsion: {
+						centralGravity: 0.01,
+						springLength: 200,
+						springConstant: 0.05,
+						nodeDistance: 1000,
+						damping: 0.09
+					},
+					barnesHut: {
+						gravitationalConstant: -10000,
+						centralGravity: 0.3,
+						springLength: 95,
+						springConstant: 0.001,
+						damping: 0.09,
+						avoidOverlap: 0.5
+					},
+				}
+			};
+			network = new vis.Network(container, data, options);
+		}
+
+		startNetwork();
+	</script>
+</body>
+</html>
