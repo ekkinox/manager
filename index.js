@@ -20,6 +20,10 @@ app.get('/network.js', function (req, res) {
     res.sendFile(__dirname + '/web/network.js');
 });
 
+app.get('/app.js', function (req, res) {
+    res.sendFile(__dirname + '/app/build/app.js');
+});
+
 app.get('/manager.js', function (req, res) {
 	res.sendFile(__dirname + '/web/manager.js');
 });
@@ -46,6 +50,14 @@ app.get('/jquery.js', function (req, res) {
 
 app.get('/random.js', function (req, res) {
     res.sendFile(__dirname + '/node_modules/random-js/lib/random.min.js');
+});
+
+app.get('/react.min.js', function (req, res) {
+    res.sendFile(__dirname + '/node_modules/react/dist/react.min.js');
+});
+
+app.get('/react-dom.min.js', function (req, res) {
+    res.sendFile(__dirname + '/node_modules/react-dom/dist/react-dom.min.js');
 });
 
 io.on('connection', function (socket) {

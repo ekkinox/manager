@@ -5,14 +5,23 @@
   "repository": "git@github.com:docker-network-analyzer/api.git",
   "author": "Michael Garrez <michael.garrez@doclerholding.com>",
   "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "./node_modules/browserify -t [ babelify --presets [ react ] ] app/src/app.js -o app/build/app.js"
+  },
   "dependencies": {
+    "babel-preset-react": "^6.16.0",
+    "babelify": "^7.3.0",
     "bootstrap": "^3.3.7",
+    "browserify": "^13.1.1",
     "dockerode": "^2.3.1",
     "express": "^4.14.0",
     "fs": "^0.0.1-security",
     "http": "^0.0.0",
     "jquery": "^3.1.1",
     "random-js": "^1.0.8",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1",
     "socket.io": "^1.7.2",
     "vis": "^4.17.0"
   }
