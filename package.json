@@ -6,10 +6,12 @@
   "author": "Michael Garrez <michael.garrez@doclerholding.com>",
   "license": "MIT",
   "dependencies": {
+    "bootstrap": "^3.3.7",
     "dockerode": "^2.3.1",
     "express": "^4.14.0",
     "fs": "^0.0.1-security",
     "http": "^0.0.0",
+    "jquery": "^3.1.1",
     "socket.io": "^1.7.2",
     "vis": "^4.17.0"
   }
