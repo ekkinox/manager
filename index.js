@@ -21,7 +21,7 @@ app.get('/network.js', function (req, res) {
 });
 
 app.get('/manager.js', function (req, res) {
-	res.sendFile(__dirname + '/dist/manager.js');
+	res.sendFile(__dirname + '/web/manager.js');
 });
 
 app.get('/vis-network.min.css', function (req, res) {
@@ -42,6 +42,10 @@ app.get('/bootstrap.css', function (req, res) {
 
 app.get('/jquery.js', function (req, res) {
     res.sendFile(__dirname + '/node_modules/jquery/dist/jquery.js');
+});
+
+app.get('/random.js', function (req, res) {
+    res.sendFile(__dirname + '/node_modules/random-js/lib/random.min.js');
 });
 
 io.on('connection', function (socket) {

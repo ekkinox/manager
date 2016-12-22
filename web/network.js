@@ -40,22 +40,19 @@ function startNetwork() {
             socket.emit('stop_container', params.nodes[0]);
         }
     });
-
-    setTimeout(function() {
-        network.clusterOutliers();
-    }, 5000);
 }
 
 startNetwork();
 
-let graph = new Graph(nodes, edges);
+let graph = new Graph();
+let drawer = new Drawer(graph, nodes, edges);
 
 let socket = io('http://127.0.0.1:3000');
 
 socket.on('update', function (remoteContainers) {
-    graph.setRemoteContainers(remoteContainers);
+    graph.updateRemoteContainers(remoteContainers);
 
-    graph.draw();
+    drawer.draw();
 });
 
 socket.on('get_container_info', function (data) {

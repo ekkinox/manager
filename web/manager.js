@@ -1,10 +1,88 @@
-class Graph {
-	constructor(nodes, edges, links = {}) {
-		this.containers = {};
-		this.networks = {};
+class Drawer {
+	constructor(graph, nodes, edges) {
+		this.graph = graph;
 		this.nodes = nodes;
 		this.edges = edges;
-		this.links = links;
+	}
+
+	draw() {
+		let that = this;
+
+		this.edges.forEach(function (edge) {
+			if (!that.graph.hasLinkById(edge.id)) {
+				that.edges.remove(edge.id);
+			}
+		});
+
+		this.nodes.forEach(function (node) {
+			if (!that.graph.hasContainerById(node.id)) {
+				that.nodes.remove(node.id);
+			}
+		});
+
+		for (let containerId in this.graph.containers) {
+			let container = this.graph.containers[containerId];
+
+			if (!container.isDrawn() && container.shouldBeDisplayed) {
+				this.nodes.add({id: container.id, label: container.name, shape: 'box', color: {border: 'black', background: 'white'}, font: {size: 20}});
+
+				container.setDraw(true);
+			}
+
+			if (container.isDrawn() && !container.shouldBeDisplayed) {
+				this.nodes.remove(container.id);
+			}
+		}
+
+		for (let linkId in this.graph.links) {
+			let link = this.graph.links[linkId];
+
+			if (!link.isDrawn() && link.shouldBeDisplayed) {
+				this.edges.add({id: link.id, from: link.fromContainer.id, to: link.toContainer.id, label: link.network.name, width: 2, color: link.network.color});
+
+				link.setDraw(true);
+			}
+
+			if (link.isDrawn() && !link.shouldBeDisplayed) {
+				this.edges.remove(link.id);
+			}
+		}
+	}
+}
+
+class Graph {
+	constructor() {
+		this.containers = {};
+		this.networks = {};
+		this.links = {};
+	}
+
+	updateDisplayedNetworksAndContainers(networksNames, containersIds) {
+		for (let networkName in this.networks) {
+			this.getNetworkByName(networkName).setShouldBeDisplayed(false);
+		}
+
+		for (let networkName of networksNames) {
+			if (this.hasNetworkByName(networkName)) {
+				this.getNetworkByName(networkName).setShouldBeDisplayed(true);
+			}
+		}
+
+		for (let containerId in this.containers) {
+			this.getContainerById(containerId).setShouldBeDisplayed(false);
+		}
+
+		for (let containerId of containersIds) {
+			if (this.hasContainerById(containerId)) {
+				this.getContainerById(containerId).setShouldBeDisplayed(true);
+			}
+		}
+
+		for (let linkId in this.links) {
+			let link = this.getLinkById(linkId);
+
+			link.setShouldBeDisplayed(link.fromContainer.shouldBeDisplayed && link.toContainer.shouldBeDisplayed && link.network.shouldBeDisplayed);
+		}
 	}
 
 	addContainer(container) {
@@ -15,6 +93,14 @@ class Graph {
 
 	hasContainerById(containerId) {
 		return this.containers.hasOwnProperty(containerId);
+	}
+
+	getContainerById(containerId) {
+		if (this.hasContainerById(containerId)) {
+			return this.containers[containerId];
+		}
+
+		return null;
 	}
 
 	removeContainerById(containerId) {
@@ -49,6 +135,14 @@ class Graph {
 
 	hasLinkById(linkId) {
 		return this.links.hasOwnProperty(linkId);
+	}
+
+	getLinkById(linkId) {
+		if (this.hasLinkById(linkId)) {
+			return this.links[linkId];
+		}
+
+		return null;
 	}
 
 	addLink(link) {
@@ -95,10 +189,12 @@ class Graph {
 		return containers;
 	}
 
-	setRemoteContainers(remoteContainers) {
+	updateRemoteContainers(remoteContainers) {
 		let containersPreUpdate = this.containers;
+		let networksPreUpdate = this.networks;
 
 		this.containers = {};
+		this.networks = {};
 
 		for (let key in remoteContainers) {
 			let remoteContainer = remoteContainers[key];
@@ -106,13 +202,20 @@ class Graph {
 			let container = new Container(remoteContainer.name, remoteContainer.id, {});
 
 			if (containersPreUpdate.hasOwnProperty(container.id)) {
-				container.setDraw(true);
+				container.setDraw(containersPreUpdate[container.id].isDrawn());
 			}
 
 			for (let remoteNetwork of remoteContainer.networks) {
 				if (!this.hasNetworkByName(remoteNetwork)) {
-					this.addNetwork(new Network(remoteNetwork));
+					let network = new Network(remoteNetwork);
+
+					if (networksPreUpdate.hasOwnProperty(remoteNetwork)) {
+						network.setDraw(networksPreUpdate[remoteNetwork].isDrawn());
+						network.setColor(networksPreUpdate[remoteNetwork].color);
+					}
+					this.addNetwork(network);
 				}
+
 				let network = this.getNetworkByName(remoteNetwork);
 
 				container.addNetwork(network);
@@ -130,40 +233,26 @@ class Graph {
 
 			this.addContainer(container);
 		}
-
-		for (let containerPreUpdateId in containersPreUpdate) {
-			if (!this.hasContainerById(containerPreUpdateId)) {
-				let containerLinks = this.getLinksByContainer(containerPreUpdateId);
-
-				for (let linkId in containerLinks) {
-					this.edges.remove(linkId);
-				}
-
-				this.nodes.remove(containerPreUpdateId);
-			}
-		}
 	}
 
-	draw() {
-		for (let containerId in this.containers) {
-			let container = this.containers[containerId];
+	getContainersNames() {
+		let containersNames = [];
 
-			if (!container.isDrawn()) {
-				this.nodes.add({id: container.id, label: container.name, shape: 'box', color: {border: 'black', background: 'white'}, font: {size: 20}});
-
-				container.setDraw(true);
-			}
+		for (let containerName in this.containers) {
+			containersNames.push(containerName);
 		}
 
-		for (let linkId in this.links) {
-			let link = this.links[linkId];
+		return containersNames;
+	}
 
-			if (!link.isDrawn()) {
-				this.edges.add({id: link.id, from: link.fromContainer.id, to: link.toContainer.id, label: link.network.name, width: 2, color: link.network.color});
+	getNetworksNames() {
+		let networksNames = [];
 
-				link.setDraw(true);
-			}
+		for (let networkName in this.networks) {
+			networksNames.push(networkName);
 		}
+
+		return networksNames;
 	}
 }
 
@@ -173,6 +262,11 @@ class Container {
 		this.id = id;
 		this.networks = networks;
 		this.drawn = false;
+		this.shouldBeDisplayed = true;
+	}
+
+	setShouldBeDisplayed(shouldBeDisplayed) {
+		this.shouldBeDisplayed = shouldBeDisplayed;
 	}
 
 	addNetwork(network) {
@@ -209,6 +303,7 @@ class Network {
 		this.name = name;
 		this.drawn = false;
 		this.color = this.buildColor();
+		this.shouldBeDisplayed = true;
 	}
 
 	isDrawn() {
@@ -219,8 +314,20 @@ class Network {
 		this.drawn = drawn;
 	}
 
+	setColor(color) {
+		this.color = color;
+	}
+
 	buildColor() {
-		return '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+		let random = new Random();
+
+		console.log(random);
+
+		return '#'+((random.real(0, 1))*0xFFFFFF<<0).toString(16);
+	}
+
+	setShouldBeDisplayed(shouldBeDisplayed) {
+		this.shouldBeDisplayed = shouldBeDisplayed;
 	}
 }
 
@@ -231,6 +338,11 @@ class Link {
 		this.toContainer = toContainer;
 		this.id = this.buildId();
 		this.drawn = false;
+		this.shouldBeDisplayed = true;
+	}
+
+	setShouldBeDisplayed(shouldBeDisplayed) {
+		this.shouldBeDisplayed = shouldBeDisplayed;
 	}
 
 	isDrawn() {
