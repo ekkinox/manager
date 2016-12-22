@@ -321,8 +321,6 @@ class Network {
 	buildColor() {
 		let random = new Random();
 
-		console.log(random);
-
 		return '#'+((random.real(0, 1))*0xFFFFFF<<0).toString(16);
 	}
 
